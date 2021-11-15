@@ -1,3 +1,41 @@
+proc float findParamAtDistance( string $curve, 
+                                string $arcLD, 
+                                float $distance, 
+                                float $epsilon )
+{
+  float $u = 0.0;
+  
+  float $min = `getAttr ( $curve + ".minValue" )`;
+  float $max = `getAttr ( $curve + ".maxValue" )`;
+
+  setAttr ( $arcLD + ".uParamValue" ) $max;
+  float $arcLength = `getAttr ( $arcLD + ".arcLength" )`;
+  
+  // Don't bother doing any work for the start or end of the curve.
+  //
+  if ( $distance <= 0.0 ) return 0.0;
+  if ( $distance >= $arcLength ) return $max;
+
+  // This is merely a diagnostic to measure the number of passes required to 
+  // find any particular point. You may be surprised that the number of 
+  // passes is typically quite low.
+  //
+  int $pass = 1;
+
+  while ( true )
+  {
+    $u = ( $min + $max ) / 2.0;
+    setAttr ( $arcLD + ".uParamValue" ) $u;
+    $arcLength = `getAttr ( $arcLD + ".arcLength" )`;
+    if ( abs( $arcLength - $distance ) < $epsilon ) break;
+    if ( $arcLength > $distance ) $max = $u;
+    else $min = $u;
+    $pass++;
+  }
+  
+  return $u;
+}
+
 // createCube curve1 1.0 1
 proc string createCube(string $curve, float $span, float $i){
     // Determine the U range for this curve
