@@ -1,0 +1,22 @@
+// createCube curve1 1.0 1
+proc string createCube(string $curve, float $span, float $i){
+    // Determine the U range for this curve
+    float $maxU = `getAttr ( $curve + ".maxValue" )`;
+  
+    // Create an arcLengthDimension node for the curve
+    string $arcLD = `arcLengthDimension ( $curve + ".u[" + $maxU + "]" )`;
+    
+    // Find the overall length of the curve
+    //float $arcLength = `getAttr ( $arcLD + ".arcLength" )`;
+    
+    // Find uParam
+    float $epsilon = 0.0001;
+    float $distance = $span * $i;
+    float $uParam = findParamAtDistance( $curve, $arcLD, $distance, $epsilon );
+    
+    float $p[3] = `pointOnCurve -pr $uParam -p $curve`;
+    string $cube[] = `polyCube -w 1 -h 1 -d 1 -ax 0 1 0 -cuv 4 -ch 1`;
+    move $p[0] $p[1] $p[2];
+    
+    return $cube[0];
+}
