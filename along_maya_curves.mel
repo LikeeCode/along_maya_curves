@@ -36,25 +36,30 @@ proc float findParamAtDistance( string $curve,
   return $u;
 }
 
-// createCube curve1 1.0 1
-proc string createCube(string $curve, float $span, float $i){
+// createCube curve1 2.0 27
+proc createCube(string $curve, float $span, int $num){
     // Determine the U range for this curve
     float $maxU = `getAttr ( $curve + ".maxValue" )`;
   
     // Create an arcLengthDimension node for the curve
     string $arcLD = `arcLengthDimension ( $curve + ".u[" + $maxU + "]" )`;
     
-    // Find the overall length of the curve
-    //float $arcLength = `getAttr ( $arcLD + ".arcLength" )`;
+    for($i = 0; $i < $num; $i++){
+        // Find uParam
+        float $epsilon = 0.0001;
+        float $distance = $span * $i;
+        float $uParam = findParamAtDistance( $curve, $arcLD, $distance, $epsilon );
     
-    // Find uParam
-    float $epsilon = 0.0001;
-    float $distance = $span * $i;
-    float $uParam = findParamAtDistance( $curve, $arcLD, $distance, $epsilon );
+        // Get position and normals
+        float $p[3] = `pointOnCurve -pr $uParam -p $curve`;
+        float $nt[3] = `pointOnCurve -pr $uParam -nt $curve`;
+        float $rot[3] = `angleBetween -euler -v1 $nt[0] $nt[1] $nt[2] -v2 1 0 0`;
     
-    float $p[3] = `pointOnCurve -pr $uParam -p $curve`;
-    string $cube[] = `polyCube -w 1 -h 1 -d 1 -ax 0 1 0 -cuv 4 -ch 1`;
-    move $p[0] $p[1] $p[2];
+        // Draw, move and rotate a cube
+        string $cube[] = `polyCube -w 1 -h 1 -d 1`;
+        move $p[0] $p[1] $p[2];
+        rotate $rot[0] (180 - $rot[1]) $rot[2];
+    }
     
-    return $cube[0];
+    delete $arcLD;
 }
